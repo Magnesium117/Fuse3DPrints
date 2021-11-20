@@ -1,4 +1,4 @@
-
+#Written by Marcel Gansfusz
 def main():
     name=str(input("Path to Gcode files \n[Gcodes/Part0.gcode->enter Gcodes/Part]: "))
     nfiles=int(input("Number of gcode files: "))
