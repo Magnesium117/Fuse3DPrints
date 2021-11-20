@@ -109,7 +109,7 @@ def main():
                     npting=False
                 f.write(line)            
             n+=1
-	print("Files combined as "+str(name)+".gcode")
+    print("Files combined as "+str(name)+".gcode")
 
 if __name__=="__main__":
     main()
