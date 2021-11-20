@@ -103,7 +103,8 @@ def main():
             for line in fle:
                 if n>0 and npting and line[:2]=="G1":
                     f.write("G0 Z"+str(startposz[n])+"\n")
-                    f.write("G1 F1500 E4\n")
+                    if not matchnge[n]:
+                        f.write("G1 F1500 E4\n")
                     f.write("G92 E"+str(startpose[n])+"\n")
                     npting=False
                 f.write(line)            
