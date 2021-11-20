@@ -15,8 +15,8 @@ def main():
         with open(name+str(n)+".gcode","r") as f:
             files.append(f.readlines())
         if n>0:
-            offset.append(float(input("Input offset of "+name+str(n)+" to the Buidlplate: ")))
-            if input("Change the filament between "+name+str(n-1)+" and "+name+str(n)+" [Y;N]: ").upper()=="Y":
+            offset.append(float(input("Input offset of "+name+str(n)+".gcode to the Buidlplate: ")))
+            if input("Change the filament between "+name+str(n-1)+".gcode and "+name+str(n)+".gcode [Y;N]: ").upper()=="Y":
                 matchnge.append(True)
             else:
                 matchnge.append(False)
@@ -109,7 +109,7 @@ def main():
                     npting=False
                 f.write(line)            
             n+=1
-
+	print("Files combined as "+str(name)+".gcode")
 
 if __name__=="__main__":
     main()
