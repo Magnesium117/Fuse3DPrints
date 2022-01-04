@@ -1,25 +1,25 @@
 #Written by Marcel Gansfusz
-def main():
-    name=str(input("Path to Gcode files \n[Gcodes/Part0.gcode->enter Gcodes/Part]: "))
-    nfiles=int(input("Number of gcode files: "))
+def f3dp(name,nfiles,offset,matchnge):
+    #name=str(input("Path to Gcode files \n[Gcodes/Part0.gcode->enter Gcodes/Part]: "))
+    #nfiles=int(input("Number of gcode files: "))
     files=[]
-    offset=[]
-    matchnge=[]
+    #offset=[]
+    #matchnge=[]
     startposz=[]
     startpose=[]
-    offset.append(0)
-    matchnge.append(False)
+    #offset.append(0)
+    #matchnge.append(False)
     startposz.append(0)
     startpose.append(0)
     for n in range(nfiles):
         with open(name+str(n)+".gcode","r") as f:
             files.append(f.readlines())
         if n>0:
-            offset.append(float(input("Input offset of "+name+str(n)+".gcode to the Buidlplate: ")))
-            if input("Change the filament between "+name+str(n-1)+".gcode and "+name+str(n)+".gcode [Y;N]: ").upper()=="Y":
-                matchnge.append(True)
-            else:
-                matchnge.append(False)
+            #offset.append(float(input("Input offset of "+name+str(n)+".gcode to the Buidlplate: ")))
+            #if input("Change the filament between "+name+str(n-1)+".gcode and "+name+str(n)+".gcode [Y;N]: ").upper()=="Y":
+            #    matchnge.append(True)
+            #else:
+            #    matchnge.append(False)
             startposz.append(0)
             startpose.append(0)
     n=0
@@ -110,6 +110,23 @@ def main():
                 f.write(line)            
             n+=1
     print("Files combined as "+str(name)+".gcode")
+
+def main():
+    name=str(input("Path to Gcode files \n[Gcodes/Part0.gcode->enter Gcodes/Part]: "))
+    nfiles=int(input("Number of gcode files: "))
+    offset=[]
+    matchnge=[]
+    offset.append(0)
+    matchnge.append(False)
+    for n in range(nfiles):
+        if n>0:
+            offset.append(float(input("Input offset of "+name+str(n)+".gcode to the Buidlplate: ")))
+            if input("Change the filament between "+name+str(n-1)+".gcode and "+name+str(n)+".gcode [Y;N]: ").upper()=="Y":
+                matchnge.append(True)
+            else:
+                matchnge.append(False)
+    f3dp(name,nfiles,offset,matchnge)
+
 
 if __name__=="__main__":
     main()
