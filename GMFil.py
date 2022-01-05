@@ -110,6 +110,7 @@ def f3dp(name,nfiles,offset,matchnge):
                 f.write(line)            
             n+=1
     print("Files combined as "+str(name)+".gcode")
+    return str(name)+".gcode"
 
 def main():
     name=str(input("Path to Gcode files \n[Gcodes/Part0.gcode->enter Gcodes/Part]: "))
