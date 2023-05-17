@@ -53,7 +53,7 @@ def f3dp(paths,offset,matchnge,name):
             for line in fle:
                 f.write(line)            
     print("Files combined as "+str(name))
-    return str(name)+".gcode"
+    return str(name)
 
 def isfloat(n):
     try:
@@ -63,7 +63,6 @@ def isfloat(n):
         return False
 
 def main():
-    f3dp(["/home/wildmanjaro/Nextcloud/tmp/MFCoin_v1_15m_0.16mm_PETG.gcode","/home/wildmanjaro/Nextcloud/tmp/MFCoin_v1_15m_0.16mm_PETG.gcode"],[0,3],[False,True],"MFCoin.gcode")
     paths=[]
     offsets=[]
     matchnge=[]

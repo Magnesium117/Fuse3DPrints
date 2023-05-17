@@ -65,6 +65,8 @@ layout=[
         gui.Button("Stop"),
 
         gui.Button("Combine"),
+        gui.Text("as"),
+        gui.In(size=(25,1),key="-NAME-"),
         gui.Text(size=(100,1),key="-OUTPUT-")
     ]
 
@@ -171,7 +173,13 @@ def ProcessEvent(event,values):
 
     elif event=="Combine":
         print(files)
-        window["-OUTPUT-"].update("Saved as: "+f3dp(paths=[f[0] for f in files],offset=[f[1] for f in files],matchnge=[f[2] for f in files],name=NamesFromFiles(files)[0]))
+        if os.path.isdir(values["-FOLDER-"]):
+            folder=values["-FOLDER-"]
+        else:
+            folder="/".join(files[0][0].split("/")[:-1])
+        name=os.path.join(folder,values["-NAME-"]+".gcode")
+        print(name)
+        window["-OUTPUT-"].update("Saved as: "+f3dp(paths=[f[0] for f in files],offset=[f[1] for f in files],matchnge=[f[2] for f in files],name=name))
 
 while True:
     event, values=window.read()
