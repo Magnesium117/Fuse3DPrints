@@ -17,14 +17,21 @@ GetFolder=[
 ]
 GetFilename=[
     [
-        gui.Text("Filename of gcode files")
+        gui.Text("Files to combine")
     ],
     [
-        gui.Text("Filename:"),
-        gui.In(size=(34,1),enable_events=True,key="-FILENAME-")
+        gui.Text("Path to file:"),
+        gui.In(size=(34,1),enable_events=True,key="-FILENAME-"),
+        gui.FileBrowse()
     ],
     [
         gui.Listbox(values=[],enable_events=True,size=(43,20),key="-CHSN FILE LIST-")
+    ],
+    [
+        gui.Button("↑",key="-MV UP-"),
+        gui.Button("↓",key="-MV DOWN-"),
+        gui.Button("-",key="-RM-"),
+        gui.Button("+",key="-ADD-")
     ]
 ]
 GetOffsetFC=[
@@ -37,6 +44,7 @@ GetOffsetFC=[
     [
         gui.Text("Offset:"),
         gui.In(size=(35,1),enable_events=True,key="-OFFSET-")
+
     ],
     [
         gui.Checkbox(text="Change Filament before file",enable_events=True,key="-CHANGE FILAMENT-")
@@ -55,23 +63,24 @@ layout=[
     ],
     [
         gui.Button("Stop"),
+
         gui.Button("Combine"),
         gui.Text(size=(100,1),key="-OUTPUT-")
     ]
 
+
 ]
 window=gui.Window("Fuse3DPrints",layout)
-filenumber=0
-nfiles=0
+
+files=[]
 name=""
-offsets=[]
-filChanges=[]
+
+def NamesFromFiles(files):
+    return [p[0].split("/")[-1] for p in files]
+
 def ProcessEvent(event,values):
-    global filenumber
-    global nfiles 
+    global files
     global name
-    global offsets
-    global filChanges
     if event=="-FOLDER-":
         folder=values["-FOLDER-"]
         try:
@@ -90,78 +99,79 @@ def ProcessEvent(event,values):
     elif event=="-FILE LIST-":
         if len(values["-FILE LIST-"])>0:
             f=values["-FILE LIST-"][0]
-            f=f[:-6]
-            while f[-1].isnumeric():
-                f=f[:-1]
-            window["-FILENAME-"].update(f)
-            values["-FILENAME-"]=f
-            ProcessEvent("-FILENAME-",values)
+            files.append([os.path.join(values["-FOLDER-"],values["-FILE LIST-"][0]),0,False])
+            window["-CHSN FILE LIST-"].update(NamesFromFiles(files))
         
-    elif event=="-FILENAME-":
-        folder=values["-FOLDER-"]
-        try:
-            file_list=os.listdir(folder)
-        except:
-            file_list=[]
-        fnames=[]
-        offsets=[]
-        filChanges=[]
-        nfiles=0
-        name=""
-        while True:
-            if os.path.isfile(os.path.join(folder,values["-FILENAME-"]+str(nfiles)+".gcode")):
-                name=os.path.join(folder,values["-FILENAME-"])
-                fnames.append(values["-FILENAME-"]+str(nfiles)+".gcode")
-                nfiles+=1
-                offsets.append(float(0))
-                filChanges.append(False)
-            else:
-                break
+    elif event=="-ADD-":
+        if os.path.isfile(values["-FILENAME-"]):
+            files.append([values["-FILENAME-"],0,False])
+            window["-CHSN FILE LIST-"].update(NamesFromFiles(files))
+    
+    elif event=="-RM-":
+        el=window["-CHSN FILE LIST-"].get_indexes()
+        for e in reversed(el):
+            files.pop(e)
+        files[0][1]=0
+        files[0][2]=False
+        window["-CHSN FILE LIST-"].update(NamesFromFiles(files))
 
-        window["-CHSN FILE LIST-"].update(fnames)
-        filenumber=0 
-        if nfiles>0:
-            window["-CHSN FILE LIST-"].update(set_to_index=[0])  
-            window["-SELECT FILE-"].update(values["-FILENAME-"]+"0.gcode")
-            window["-OFFSET-"].update("")
-            window["-CHANGE FILAMENT-"].update(False)
-            window["-OFFSET-"].update(disabled=True)
-            window["-CHANGE FILAMENT-"].update(disabled=True)
+    elif event=="-MV UP-":
+        el=window["-CHSN FILE LIST-"].get_indexes()
+        for e in el:
+            if e>0:
+                p=files.pop(e)
+                files.insert(e-1,p)
+        files[0][1]=0
+        files[0][2]=False
+        window["-CHSN FILE LIST-"].update(NamesFromFiles(files))
+
+    elif event=="-MV DOWN-":
+        el=window["-CHSN FILE LIST-"].get_indexes()
+        for e in reversed(el):
+            if e<len(files):
+                p=files.pop(e)
+                files.insert(e+1,p)
+        files[0][1]=0
+        files[0][2]=False
+        window["-CHSN FILE LIST-"].update(NamesFromFiles(files))
 
     elif event=="-CHSN FILE LIST-":
-        if nfiles>0:
-            window["-SELECT FILE-"].update(values["-CHSN FILE LIST-"][0])
-            filenumber=int(values["-CHSN FILE LIST-"][0][len(values["-FILENAME-"]):-6])
-            window["-OFFSET-"].update(offsets[filenumber])
-            window["-CHANGE FILAMENT-"].update(filChanges[filenumber])
-            if filenumber==0:
-                window["-OFFSET-"].update(disabled=True)
-                window["-CHANGE FILAMENT-"].update(disabled=True)
-            else:
-                window["-OFFSET-"].update(disabled=False)
-                window["-CHANGE FILAMENT-"].update(disabled=False)
+        el=window["-CHSN FILE LIST-"].get_indexes()
+        s=""
+        l=NamesFromFiles(files)
+        for e in el:
+            if s!="":
+                s+=", "
+            s+=l[e]
+        window["-SELECT FILE-"].update(s)
+        window["-OFFSET-"].update(files[el[0]][1])
+        window["-CHANGE FILAMENT-"].update(files[el[0]][2])
+        if el[0]==0:
+            window["-OFFSET-"].update(disabled=True)
+            window["-CHANGE FILAMENT-"].update(disabled=True)
+        else:
+            window["-OFFSET-"].update(disabled=False)
+            window["-CHANGE FILAMENT-"].update(disabled=False)
 
     elif event=="-OFFSET-":
-        try:
-            offsets[filenumber]=float(values["-OFFSET-"])
-        except:
-            window["-OFFSET-"].update("")
+        el=window["-CHSN FILE LIST-"].get_indexes()
+        for e in el:
+            try:
+                files[e][1]=float(values["-OFFSET-"])
+            except:
+                window["-OFFSET-"].update("")
 
     elif event=="-CHANGE FILAMENT-":
-        if filenumber>0:
-            filChanges[filenumber]=values["-CHANGE FILAMENT-"]
-        else:
-            window["-CHANGE FILAMENT-"].update(False)
+        el=window["-CHSN FILE LIST-"].get_indexes()
+        for e in el:
+            if e>0:
+                files[e][2]=values["-CHANGE FILAMENT-"]
+            else:
+                window["-CHANGE FILAMENT-"].update(False)
 
     elif event=="Combine":
-        print(name)
-        print(nfiles)
-        print(offsets)
-        print(filChanges)
-        if nfiles>0:
-            window["-OUTPUT-"].update("Saved as: "+f3dp(name,nfiles,offsets,filChanges))
-        else:
-            window["-OUTPUT-"].update("No files selected")
+        print(files)
+        window["-OUTPUT-"].update("Saved as: "+f3dp(paths=[f[0] for f in files],offset=[f[1] for f in files],matchnge=[f[2] for f in files],name=NamesFromFiles(files)[0]))
 
 while True:
     event, values=window.read()
