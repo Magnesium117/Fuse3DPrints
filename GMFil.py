@@ -8,6 +8,7 @@ def f3dp(paths,offset,matchnge,name):
         dellines=[]
         delmvmt=False
         section="s"     #s...stsart, g...general, e...end
+        ends=0
         for n,line in enumerate(file):
             if section=="s" and filenr==0:
                 section="g"
@@ -20,6 +21,7 @@ def f3dp(paths,offset,matchnge,name):
                     dellines.append(n)
                 if delmvmt and "; Start Gcode done" in line:
                     delmvmt=False
+                    ends=n
                     section="g"
 #</Start Gcode>
 #<Genderal Gcode>
@@ -39,12 +41,20 @@ def f3dp(paths,offset,matchnge,name):
                     dellines.append(n);
                     if "M84" in line:
                         delmvmt=True
+                elif "E-" in line or "X" in line:
+                    dellines.append(n);
                 elif delmvmt:
                     dellines.append(n)
 
 #</End Gcode>
         for line in reversed(dellines):
             files[filenr].pop(line)
+            if line<ends: ends-=1
+        if filenr !=0:
+            files[filenr].insert(ends,"G92 E0\n")
+            files[filenr].insert(ends,"G4 S5\n")
+            files[filenr].insert(ends,"G1 E20 F500\n")
+            files[filenr].insert(ends,"G1 X2 Y40 F3000\n")
 
     with open(name,"w") as f:
         for n,fle in enumerate(files):
